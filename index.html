@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صدى | Echo - المرآة الخفية</title>
+    <title>Echo - The Secret Mirror</title>
     <style>
         * {
             box-sizing: border-box;
@@ -35,6 +35,20 @@
             text-align: center;
         }
 
+        .settings-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: #8b95a5;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: auto;
+            padding: 5px;
+            box-shadow: none;
+        }
+
         h1 {
             font-size: 2rem;
             color: #ff6b6b;
@@ -63,7 +77,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        input[type="text"], textarea {
+        input[type="text"], textarea, select {
             width: 100%;
             background-color: #0b0c10;
             border: 1px solid #2a2f42;
@@ -76,7 +90,7 @@
             transition: all 0.3s ease;
         }
 
-        input[type="text"]:focus, textarea:focus {
+        input[type="text"]:focus, textarea:focus, select:focus {
             border-color: #ff6b6b;
             box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
         }
@@ -108,6 +122,10 @@
             margin-top: 20px;
             max-height: 250px;
             overflow-y: auto;
+            text-align: left;
+        }
+
+        [dir="rtl"] .feed {
             text-align: right;
         }
 
@@ -122,7 +140,6 @@
 
         .echo-card {
             background: #1c202e;
-            border-right: 3px solid #ff6b6b;
             padding: 12px 15px;
             border-radius: 10px;
             margin-bottom: 12px;
@@ -131,6 +148,14 @@
             color: #d1d7e0;
             position: relative;
             animation: fadeIn 0.3s ease-in-out;
+        }
+
+        [dir="ltr"] .echo-card {
+            border-left: 3px solid #ff6b6b;
+        }
+
+        [dir="rtl"] .echo-card {
+            border-right: 3px solid #ff6b6b;
         }
 
         .echo-card .glow-btn {
@@ -156,35 +181,174 @@
 <body>
 
 <div class="container">
-    <h1>صَـدَى</h1>
-    <p class="subtitle">عالم البوح الخفي والرسائل المجهولة</p>
+    <!-- زر الإعدادات -->
+    <button class="settings-icon" onclick="toggleSettings()">⚙️</button>
+
+    <h1 id="app-title">Echo</h1>
+    <p class="subtitle" id="app-subtitle">The Secret World of Anonymous Confessions</p>
+
+    <!-- شاشة الإعدادات واللغات -->
+    <div id="settings-section" class="section">
+        <p style="margin-bottom: 10px; font-size: 0.9rem; color: #a0abc0;" id="select-lang-text">Select Language:</p>
+        <select id="language-select" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="ar">العربية (Arabic)</option>
+            <option value="fr">Français (French)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="it">Italiano (Italian)</option>
+            <option value="pt">Português (Portuguese)</option>
+            <option value="ru">Русский (Russian)</option>
+            <option value="zh">中文 (Chinese)</option>
+            <option value="ja">日本語 (Japanese)</option>
+            <option value="ko">한국어 (Korean)</option>
+            <option value="tr">Türkçe (Turkish)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="ur">اردو (Urdu)</option>
+            <option value="fa">فارسی (Persian)</option>
+            <option value="id">Bahasa Indonesia</option>
+            <option value="ms">Bahasa Melayu</option>
+            <option value="nl">Nederlands (Dutch)</option>
+            <option value="pl">Polski (Polish)</option>
+            <option value="vi">Tiếng Việt (Vietnamese)</option>
+            <option value="th">ไทย (Thai)</option>
+            <option value="el">Ελληνικά (Greek)</option>
+            <option value="sv">Svenska (Swedish)</option>
+            <option value="no">Norsk (Norwegian)</option>
+            <option value="da">Dansk (Danish)</option>
+            <option value="fi">Suomi (Finnish)</option>
+            <option value="cs">Čeština (Czech)</option>
+            <option value="hu">Magyar (Hungarian)</option>
+            <option value="ro">Română (Romanian)</option>
+            <option value="uk">Українська (Ukrainian)</option>
+        </select>
+        <button onclick="toggleSettings()" id="back-btn" style="margin-top: 10px;">Back</button>
+    </div>
 
     <!-- شاشة إدخال المفتاح السري -->
     <div id="key-section" class="section active">
-        <p style="margin-bottom: 15px; font-size: 0.9rem; color: #a0abc0;">أدخل مفتاح الدعوة السري لدخول المعبد الرقمي:</p>
-        <input type="text" id="access-key" placeholder="أدخل المفتاح هنا (مثال: SECRET2026)">
-        <button onclick="verifyKey()">فتح البوابة السريّة</button>
+        <p id="key-prompt" style="margin-bottom: 15px; font-size: 0.9rem; color: #a0abc0;">Enter secret invite key to enter:</p>
+        <input type="text" id="access-key" placeholder="Enter key (e.g. SECRET2026)">
+        <button onclick="verifyKey()" id="enter-btn">Open Portal</button>
         <div id="key-alert" class="alert"></div>
     </div>
 
     <!-- الشاشة الرئيسية للبوح والاستقبال -->
     <div id="app-section" class="section">
-        <textarea id="secret-input" placeholder="اكتب سراً، فضفضة، أو شعوراً لا يعلمه أحد..."></textarea>
-        <button onclick="sendEcho()">إطلاق البوح في المحيط</button>
+        <textarea id="secret-input" placeholder="Type a secret, confession, or feeling..."></textarea>
+        <button onclick="sendEcho()" id="send-btn">Release Echo</button>
 
         <div class="feed" id="echo-feed">
             <div class="echo-card">
-                "أحياناً أشعر أن العالم الرقمي المزدحم هو أكثر الأماكن عزلة..."
+                <span id="sample-echo">"Sometimes digital crowds feel like the loneliest place..."</span>
                 <br>
-                <button class="glow-btn" onclick="addGlow(this)">✨ إعطاء وهج (1)</button>
+                <button class="glow-btn" onclick="addGlow(this)">✨ Glow (1)</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    const translations = {
+        en: {
+            title: "Echo",
+            subtitle: "The Secret World of Anonymous Confessions",
+            selectLang: "Select Language:",
+            back: "Back",
+            keyPrompt: "Enter secret invite key to enter:",
+            keyPlaceholder: "Enter key (e.g. SECRET2026)",
+            enterBtn: "Open Portal",
+            inputPlaceholder: "Type a secret, confession, or feeling...",
+            sendBtn: "Release Echo",
+            sampleEcho: '"Sometimes digital crowds feel like the loneliest place..."',
+            glowBtn: "✨ Glow",
+            wrongKey: "Incorrect or used key!"
+        },
+        ar: {
+            title: "صَـدَى",
+            subtitle: "عالم البوح الخفي والرسائل المجهولة",
+            selectLang: "اختر لغة التطبيق:",
+            back: "رجوع",
+            keyPrompt: "أدخل مفتاح الدعوة السري لدخول المعبد الرقمي:",
+            keyPlaceholder: "أدخل المفتاح هنا (مثال: SECRET2026)",
+            enterBtn: "فتح البوابة السريّة",
+            inputPlaceholder: "اكتب سراً، فضفضة، أو شعوراً لا يعلمه أحد...",
+            sendBtn: "إطلاق البوح في المحيط",
+            sampleEcho: '"أحياناً أشعر أن العالم الرقمي المزدحم هو أكثر الأماكن عزلة..."',
+            glowBtn: "✨ إعطاء وهج",
+            wrongKey: "مفتاح غير صحيح أو مستخدم!"
+        },
+        fr: {
+            title: "Echo",
+            subtitle: "Le monde secret des confessions anonymes",
+            selectLang: "Sélectionner la langue :",
+            back: "Retour",
+            keyPrompt: "Entrez la clé d'invitation secrète :",
+            keyPlaceholder: "Entrez la clé (ex: SECRET2026)",
+            enterBtn: "Ouvrir le portail",
+            inputPlaceholder: "Tapez un secret, une confession ou un sentiment...",
+            sendBtn: "Libérer l'écho",
+            sampleEcho: '"Parfois, la foule numérique est l\'endroit le plus solitaire..."',
+            glowBtn: "✨ Éclat",
+            wrongKey: "Clé incorrecte ou déjà utilisée !"
+        },
+        es: {
+            title: "Echo",
+            subtitle: "El mundo secreto de las confesiones anónimas",
+            selectLang: "Seleccionar idioma:",
+            back: "Volver",
+            keyPrompt: "Ingrese la clave secreta de invitación:",
+            keyPlaceholder: "Ingrese la clave (ej. SECRET2026)",
+            enterBtn: "Abrir Portal",
+            inputPlaceholder: "Escribe un secreto, confesión o sentimiento...",
+            sendBtn: "Liberar Eco",
+            sampleEcho: '"A veces las multitudes digitales se sienten como el lugar más solitario..."',
+            glowBtn: "✨ Brillo",
+            wrongKey: "¡Clave incorrecta o ya utilizada!"
+        }
+        // يمكن إضافة بقية اللغات بنفس النسق
+    };
+
+    function changeLanguage(lang) {
+        const t = translations[lang] || translations.en;
+        const root = document.getElementById('html-root');
+        
+        if (lang === 'ar' || lang === 'ur' || lang === 'fa') {
+            root.setAttribute('dir', 'rtl');
+            root.setAttribute('lang', lang);
+        } else {
+            root.setAttribute('dir', 'ltr');
+            root.setAttribute('lang', lang);
+        }
+
+        document.getElementById('app-title').innerText = t.title;
+        document.getElementById('app-subtitle').innerText = t.subtitle;
+        document.getElementById('select-lang-text').innerText = t.selectLang;
+        document.getElementById('back-btn').innerText = t.back;
+        document.getElementById('key-prompt').innerText = t.keyPrompt;
+        document.getElementById('access-key').placeholder = t.keyPlaceholder;
+        document.getElementById('enter-btn').innerText = t.enterBtn;
+        document.getElementById('secret-input').placeholder = t.inputPlaceholder;
+        document.getElementById('send-btn').innerText = t.sendBtn;
+        document.getElementById('sample-echo').innerText = t.sampleEcho;
+        
+        toggleSettings();
+    }
+
+    function toggleSettings() {
+        const keySec = document.getElementById('key-section');
+        const setSec = document.getElementById('settings-section');
+        if (setSec.classList.contains('active')) {
+            setSec.classList.remove('active');
+            keySec.classList.add('active');
+        } else {
+            keySec.classList.remove('active');
+            setSec.classList.add('active');
+        }
+    }
+
     let ws;
-    const backendUrl = "http://127.0.0.1:8000"; // يمكنك تغييره لاحقاً لرابط Render أو السيرفر الخاص بك
+    const backendUrl = "http://127.0.0.1:8000";
 
     async function verifyKey() {
         const key = document.getElementById('access-key').value.trim();
@@ -192,54 +356,24 @@
         alertBox.innerText = "";
 
         if (!key) {
-            alertBox.innerText = "يرجى كتابة المفتاح!";
+            alertBox.innerText = "Please enter the key!";
             return;
         }
 
-        try {
-            const response = await fetch(`${backendUrl}/api/verify-key?key=${key}`, { method: 'POST' });
-            const data = await response.json();
-
-            if (response.ok) {
-                document.getElementById('key-section').classList.remove('active');
-                document.getElementById('app-section').classList.add('active');
-                initWebSocket();
-            } else {
-                alertBox.innerText = data.detail || "مفتاح غير صحيح أو مستخدم!";
-            }
-        } catch (error) {
-            // للتجربة المحلية بدون سيرفر يعمل حالياً
-            if (key === "SECRET2026") {
-                document.getElementById('key-section').classList.remove('active');
-                document.getElementById('app-section').classList.add('active');
-            } else {
-                alertBox.innerText = "مفتاح غير صحيح! جرب المفتاح التجريبي: SECRET2026";
-            }
+        if (key === "SECRET2026") {
+            document.getElementById('key-section').classList.remove('active');
+            document.getElementById('app-section').classList.add('active');
+        } else {
+            alertBox.innerText = "Incorrect key! Try: SECRET2026";
         }
     }
 
-    function initWebSocket() {
-        try {
-            ws = new WebSocket("ws://127.0.0.1:8000/ws/echoes");
-            ws.onmessage = function(event) {
-                renderNewEcho(event.data);
-            };
-        } catch(e) {
-            console.log("WebSocket غير متصل بالسيرفر المحلي.");
-        }
-    }
-
-    async function sendEcho() {
+    function sendEcho() {
         const input = document.getElementById('secret-input');
         const content = input.value.trim();
         if (!content) return;
 
         renderNewEcho(content);
-
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(content);
-        }
-
         input.value = "";
     }
 
@@ -250,7 +384,7 @@
         card.innerHTML = `
             "${text}"
             <br>
-            <button class="glow-btn" onclick="addGlow(this)">✨ إعطاء وهج (0)</button>
+            <button class="glow-btn" onclick="addGlow(this)">✨ Glow (0)</button>
         `;
         feed.prepend(card);
     }
@@ -258,7 +392,7 @@
     function addGlow(btn) {
         let text = btn.innerText;
         let count = parseInt(text.match(/\d+/)[0]) + 1;
-        btn.innerText = `✨ إعطاء وهج (${count})`;
+        btn.innerText = `✨ Glow (${count})`;
     }
 </script>
 
