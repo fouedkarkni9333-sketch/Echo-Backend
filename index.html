@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صدى | Echo - المرآة الخفية</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d0e12;
+            color: #e0e6ed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: #151821;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 107, 107, 0.1);
+            border: 1px solid #232736;
+            position: relative;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #ff6b6b;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+
+        p.subtitle {
+            font-size: 0.85rem;
+            color: #8b95a5;
+            margin-bottom: 25px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background-color: #0b0c10;
+            border: 1px solid #2a2f42;
+            border-radius: 14px;
+            padding: 14px;
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+        }
+
+        textarea {
+            resize: none;
+            height: 120px;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .feed {
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            text-align: right;
+        }
+
+        .feed::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .feed::-webkit-scrollbar-thumb {
+            background: #2a2f42;
+            border-radius: 4px;
+        }
+
+        .echo-card {
+            background: #1c202e;
+            border-right: 3px solid #ff6b6b;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #d1d7e0;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .echo-card .glow-btn {
+            background: none;
+            border: none;
+            color: #ff8e53;
+            font-size: 0.8rem;
+            width: auto;
+            padding: 0;
+            margin-top: 8px;
+            box-shadow: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .alert {
+            color: #ff4757;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>صَـدَى</h1>
+    <p class="subtitle">عالم البوح الخفي والرسائل المجهولة</p>
+
+    <!-- شاشة إدخال المفتاح السري -->
+    <div id="key-section" class="section active">
+        <p style="margin-bottom: 15px; font-size: 0.9rem; color: #a0abc0;">أدخل مفتاح الدعوة السري لدخول المعبد الرقمي:</p>
+        <input type="text" id="access-key" placeholder="أدخل المفتاح هنا (مثال: SECRET2026)">
+        <button onclick="verifyKey()">فتح البوابة السريّة</button>
+        <div id="key-alert" class="alert"></div>
+    </div>
+
+    <!-- الشاشة الرئيسية للبوح والاستقبال -->
+    <div id="app-section" class="section">
+        <textarea id="secret-input" placeholder="اكتب سراً، فضفضة، أو شعوراً لا يعلمه أحد..."></textarea>
+        <button onclick="sendEcho()">إطلاق البوح في المحيط</button>
+
+        <div class="feed" id="echo-feed">
+            <div class="echo-card">
+                "أحياناً أشعر أن العالم الرقمي المزدحم هو أكثر الأماكن عزلة..."
+                <br>
+                <button class="glow-btn" onclick="addGlow(this)">✨ إعطاء وهج (1)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ws;
+    const backendUrl = "http://127.0.0.1:8000"; // يمكنك تغييره لاحقاً لرابط Render أو السيرفر الخاص بك
+
+    async function verifyKey() {
+        const key = document.getElementById('access-key').value.trim();
+        const alertBox = document.getElementById('key-alert');
+        alertBox.innerText = "";
+
+        if (!key) {
+            alertBox.innerText = "يرجى كتابة المفتاح!";
+            return;
+        }
+
+        try {
+            const response = await fetch(`${backendUrl}/api/verify-key?key=${key}`, { method: 'POST' });
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('key-section').classList.remove('active');
+                document.getElementById('app-section').classList.add('active');
+                initWebSocket();
+            } else {
+                alertBox.innerText = data.detail || "مفتاح غير صحيح أو مستخدم!";
+            }
+        } catch (error) {
+            // للتجربة المحلية بدون سيرفر يعمل حالياً
+            if (key === "SECRET2026") {
+                document.getElementById('key-section').classList.remove('active');
+                document.getElementById('app-section').classList.add('active');
+            } else {
+                alertBox.innerText = "مفتاح غير صحيح! جرب المفتاح التجريبي: SECRET2026";
+            }
+        }
+    }
+
+    function initWebSocket() {
+        try {
+            ws = new WebSocket("ws://127.0.0.1:8000/ws/echoes");
+            ws.onmessage = function(event) {
+                renderNewEcho(event.data);
+            };
+        } catch(e) {
+            console.log("WebSocket غير متصل بالسيرفر المحلي.");
+        }
+    }
+
+    async function sendEcho() {
+        const input = document.getElementById('secret-input');
+        const content = input.value.trim();
+        if (!content) return;
+
+        renderNewEcho(content);
+
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(content);
+        }
+
+        input.value = "";
+    }
+
+    function renderNewEcho(text) {
+        const feed = document.getElementById('echo-feed');
+        const card = document.createElement('div');
+        card.className = 'echo-card';
+        card.innerHTML = `
+            "${text}"
+            <br>
+            <button class="glow-btn" onclick="addGlow(this)">✨ إعطاء وهج (0)</button>
+        `;
+        feed.prepend(card);
+    }
+
+    function addGlow(btn) {
+        let text = btn.innerText;
+        let count = parseInt(text.match(/\d+/)[0]) + 1;
+        btn.innerText = `✨ إعطاء وهج (${count})`;
+    }
+</script>
+
+</body>
+</html>
