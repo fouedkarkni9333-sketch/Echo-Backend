@@ -49,6 +49,11 @@
             box-shadow: none;
         }
 
+        [dir="rtl"] .settings-icon {
+            left: auto;
+            right: 20px;
+        }
+
         h1 {
             font-size: 2rem;
             color: #ff6b6b;
@@ -97,7 +102,7 @@
 
         textarea {
             resize: none;
-            height: 120px;
+            height: 110px;
         }
 
         button {
@@ -118,9 +123,20 @@
             transform: scale(0.98);
         }
 
+        .invite-box {
+            background: #1c202e;
+            border: 1px dashed #ff8e53;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #ff8e53;
+            word-break: break-all;
+        }
+
         .feed {
-            margin-top: 20px;
-            max-height: 250px;
+            margin-top: 15px;
+            max-height: 200px;
             overflow-y: auto;
             text-align: left;
         }
@@ -235,6 +251,11 @@
 
     <!-- الشاشة الرئيسية للبوح والاستقبال -->
     <div id="app-section" class="section">
+        <!-- صندوق مفتاح الدعوة الخاص بالمستخدم -->
+        <div class="invite-box" id="user-invite-box">
+            🔑 <span id="invite-title-text">Your Invite Key:</span> <strong id="my-invite-key">---</strong>
+        </div>
+
         <textarea id="secret-input" placeholder="Type a secret, confession, or feeling..."></textarea>
         <button onclick="sendEcho()" id="send-btn">Release Echo</button>
 
@@ -261,7 +282,7 @@
             inputPlaceholder: "Type a secret, confession, or feeling...",
             sendBtn: "Release Echo",
             sampleEcho: '"Sometimes digital crowds feel like the loneliest place..."',
-            glowBtn: "✨ Glow",
+            inviteText: "Your Invite Key to share:",
             wrongKey: "Incorrect or used key!"
         },
         ar: {
@@ -275,7 +296,7 @@
             inputPlaceholder: "اكتب سراً، فضفضة، أو شعوراً لا يعلمه أحد...",
             sendBtn: "إطلاق البوح في المحيط",
             sampleEcho: '"أحياناً أشعر أن العالم الرقمي المزدحم هو أكثر الأماكن عزلة..."',
-            glowBtn: "✨ إعطاء وهج",
+            inviteText: "مفتاح دعوتك الخاص لمشاركته:",
             wrongKey: "مفتاح غير صحيح أو مستخدم!"
         },
         fr: {
@@ -289,7 +310,7 @@
             inputPlaceholder: "Tapez un secret, une confession ou un sentiment...",
             sendBtn: "Libérer l'écho",
             sampleEcho: '"Parfois, la foule numérique est l\'endroit le plus solitaire..."',
-            glowBtn: "✨ Éclat",
+            inviteText: "Votre clé d'invitation à partager :",
             wrongKey: "Clé incorrecte ou déjà utilisée !"
         },
         es: {
@@ -303,13 +324,15 @@
             inputPlaceholder: "Escribe un secreto, confesión o sentimiento...",
             sendBtn: "Liberar Eco",
             sampleEcho: '"A veces las multitudes digitales se sienten como el lugar más solitario..."',
-            glowBtn: "✨ Brillo",
+            inviteText: "Tu clave de invitación para compartir:",
             wrongKey: "¡Clave incorrecta o ya utilizada!"
         }
-        // يمكن إضافة بقية اللغات بنفس النسق
     };
 
+    let currentLang = 'en';
+
     function changeLanguage(lang) {
+        currentLang = lang;
         const t = translations[lang] || translations.en;
         const root = document.getElementById('html-root');
         
@@ -328,6 +351,7 @@
         document.getElementById('key-prompt').innerText = t.keyPrompt;
         document.getElementById('access-key').placeholder = t.keyPlaceholder;
         document.getElementById('enter-btn').innerText = t.enterBtn;
+        document.getElementById('invite-title-text').innerText = t.inviteText;
         document.getElementById('secret-input').placeholder = t.inputPlaceholder;
         document.getElementById('send-btn').innerText = t.sendBtn;
         document.getElementById('sample-echo').innerText = t.sampleEcho;
@@ -338,17 +362,27 @@
     function toggleSettings() {
         const keySec = document.getElementById('key-section');
         const setSec = document.getElementById('settings-section');
+        const appSec = document.getElementById('app-section');
+        
         if (setSec.classList.contains('active')) {
             setSec.classList.remove('active');
-            keySec.classList.add('active');
+            if (appSec.dataset.entered === "true") {
+                appSec.classList.add('active');
+            } else {
+                keySec.classList.add('active');
+            }
         } else {
             keySec.classList.remove('active');
+            appSec.classList.remove('active');
             setSec.classList.add('active');
         }
     }
 
-    let ws;
-    const backendUrl = "http://127.0.0.1:8000";
+    // توليد مفتاح دعوة عشوائي فريد للمستخدم
+    function generateUserKey() {
+        const randomKey = "ECHO-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+        document.getElementById('my-invite-key').innerText = randomKey;
+    }
 
     async function verifyKey() {
         const key = document.getElementById('access-key').value.trim();
@@ -360,11 +394,16 @@
             return;
         }
 
-        if (key === "SECRET2026") {
+        // قبول المفتاح التجريبي أو أي مفتاح مُولّد يبدأ بـ ECHO-
+        if (key === "SECRET2026" || key.startsWith("ECHO-")) {
             document.getElementById('key-section').classList.remove('active');
-            document.getElementById('app-section').classList.add('active');
+            const appSec = document.getElementById('app-section');
+            appSec.classList.add('active');
+            appSec.dataset.entered = "true";
+            generateUserKey(); // توليد مفتاح خاص بهذا المستخدم لمشاركته
         } else {
-            alertBox.innerText = "Incorrect key! Try: SECRET2026";
+            const t = translations[currentLang] || translations.en;
+            alertBox.innerText = t.wrongKey;
         }
     }
 
